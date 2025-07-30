@@ -18,13 +18,14 @@ API REST para gerenciamento de produtos, baseada em Quarkus e Clean Architecture
 
 ## 📋 Endpoints REST
 
-| Método | Endpoint             | Descrição               |
-|--------|----------------------|-------------------------|
-| GET    | `/products`          | Listar todos os produtos|
-| GET    | `/products/{id}`     | Buscar produto por ID   |
-| POST   | `/products`          | Criar novo produto      |
-| PUT    | `/products/{id}`     | Atualizar produto       |
-| DELETE | `/products/{id}`     | Remover produto         |
+| Método | Endpoint             | Descrição                      |
+|--------|----------------------|--------------------------------|
+| GET    | `/products`          | Listar todos os produtos       |
+| GET    | `/products/{id}`     | Buscar produto por ID          |
+| GET    | `/products/skus`     | Buscar produtos por lista de SKUs |
+| POST   | `/products`          | Criar novo produto             |
+| PUT    | `/products/{id}`     | Atualizar produto              |
+| DELETE | `/products/{id}`     | Remover produto                |
 
 ### Exemplos
 
@@ -49,6 +50,37 @@ POST /products
   "price": 18.5
 }
 ```
+
+#### Buscar produtos por SKUs
+
+```bash
+GET /products/skus?sku=SKU123&sku=SKU456&sku=SKU789
+```
+
+#### Resposta
+
+```json
+[
+  {
+    "id": "uuid-1",
+    "name": "Café Especial",
+    "sku": "SKU123",
+    "price": 18.5
+  },
+  {
+    "id": "uuid-2",
+    "name": "Açúcar Cristal",
+    "sku": "SKU456",
+    "price": 12.0
+  }
+]
+```
+
+**Notas sobre busca por SKUs:**
+- Aceita múltiplos parâmetros `sku` na query string
+- Retorna apenas produtos encontrados (ignora SKUs inexistentes)
+- Lista vazia se nenhum SKU for encontrado
+- SKUs duplicados são tratados automaticamente
 
 ---
 
@@ -102,6 +134,3 @@ docker-compose up --build
 - `controller` - REST API
 - `infra` - handlers globais (erros, etc)
 - `mapper` - conversores (DTO ↔ domínio)
-
-
-

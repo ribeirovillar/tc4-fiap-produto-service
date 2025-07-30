@@ -54,6 +54,13 @@ public class ProductJpaRepository implements ProductGateway {
     }
 
     @Override
+    public List<Product> findBySkus(List<String> skus) {
+        return productRepository.find("sku in ?1", skus).stream()
+                .map(productMapper::mapFromEntityToDomain)
+                .toList();
+    }
+
+    @Override
     public void delete(Product product) {
         productRepository.delete(productMapper.mapFromDomainToEntity(product));
     }

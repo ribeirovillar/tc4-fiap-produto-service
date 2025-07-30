@@ -197,4 +197,118 @@ class ProductControllerTest {
                 .body("status", Matchers.equalTo(400));
     }
 
+    @Test
+    @Order(13)
+    void testGetProductsBySkus_WithMultipleValidSkus() {
+        ProductRequestDTO product1 = new ProductRequestDTO("Produto SKU Test 1", "SKU_TEST_001", new BigDecimal("100.0"));
+        ProductRequestDTO product2 = new ProductRequestDTO("Produto SKU Test 2", "SKU_TEST_002", new BigDecimal("200.0"));
+        ProductRequestDTO product3 = new ProductRequestDTO("Produto SKU Test 3", "SKU_TEST_003", new BigDecimal("300.0"));
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(product1)
+                .when()
+                .post("/products")
+                .then()
+                .statusCode(201);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(product2)
+                .when()
+                .post("/products")
+                .then()
+                .statusCode(201);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(product3)
+                .when()
+                .post("/products")
+                .then()
+                .statusCode(201);
+
+        given()
+                .queryParam("sku", "SKU_TEST_001")
+                .queryParam("sku", "SKU_TEST_002")
+                .queryParam("sku", "SKU_TEST_003")
+                .when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(3))
+                .body("find { it.sku == 'SKU_TEST_001' }.name", Matchers.equalTo("Produto SKU Test 1"))
+                .body("find { it.sku == 'SKU_TEST_002' }.name", Matchers.equalTo("Produto SKU Test 2"))
+                .body("find { it.sku == 'SKU_TEST_003' }.name", Matchers.equalTo("Produto SKU Test 3"));
+    }
+
+    @Test
+    @Order(14)
+    void testGetProductsBySkus_WithSingleSku() {
+        given()
+                .queryParam("sku", "SKU_TEST_001")
+                .when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(1))
+                .body("[0].sku", Matchers.equalTo("SKU_TEST_001"))
+                .body("[0].name", Matchers.equalTo("Produto SKU Test 1"));
+    }
+
+    @Test
+    @Order(15)
+    void testGetProductsBySkus_WithNonExistentSkus() {
+        given()
+                .queryParam("sku", "NON_EXISTENT_SKU_001")
+                .queryParam("sku", "NON_EXISTENT_SKU_002")
+                .when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    @Order(16)
+    void testGetProductsBySkus_WithMixedValidAndInvalidSkus() {
+        given()
+                .queryParam("sku", "SKU_TEST_001") // Existe
+                .queryParam("sku", "NON_EXISTENT_SKU") // Não existe
+                .queryParam("sku", "SKU_TEST_002") // Existe
+                .when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(2))
+                .body("find { it.sku == 'SKU_TEST_001' }.name", Matchers.equalTo("Produto SKU Test 1"))
+                .body("find { it.sku == 'SKU_TEST_002' }.name", Matchers.equalTo("Produto SKU Test 2"));
+    }
+
+    @Test
+    @Order(17)
+    void testGetProductsBySkus_WithEmptySkuList() {
+        when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    @Order(18)
+    void testGetProductsBySkus_WithDuplicateSkus() {
+        given()
+                .queryParam("sku", "SKU_TEST_001")
+                .queryParam("sku", "SKU_TEST_001") // SKU duplicado
+                .queryParam("sku", "SKU_TEST_002")
+                .when()
+                .get("/products/skus")
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.equalTo(2)) // Deve retornar apenas produtos únicos
+                .body("find { it.sku == 'SKU_TEST_001' }.name", Matchers.equalTo("Produto SKU Test 1"))
+                .body("find { it.sku == 'SKU_TEST_002' }.name", Matchers.equalTo("Produto SKU Test 2"));
+    }
+
 }

@@ -15,6 +15,7 @@ public interface ProductGateway {
 
     Optional<Product> findById(UUID productId);
     Optional<Product> findBySku(String sku);
+    List<Product> findBySkus(List<String> skus);
 
     void delete(Product product);
 

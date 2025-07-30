@@ -9,6 +9,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.UUID;
 
 @Path("/products")
@@ -24,6 +25,8 @@ public class ProductController {
     RetrieveProductByIdUseCase retrieveProductByIdUseCase;
     @Inject
     RetrieveAllProductsUseCase retrieveAllProductsUseCase;
+    @Inject
+    RetrieveProductsBySkusUseCase retrieveProductsBySkusUseCase;
     @Inject
     UpdateProductUseCase updateProductUseCase;
     @Inject
@@ -68,5 +71,14 @@ public class ProductController {
     public Response delete(@PathParam("id") UUID id) {
         deleteProductUseCase.execute(id);
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/skus")
+    public Response getBySkus(@QueryParam("sku") List<String> skus) {
+        return Response
+                .status(Response.Status.OK)
+                .entity(retrieveProductsBySkusUseCase.execute(skus).stream().map(productMapper::mapFromDomainToDto).toList())
+                .build();
     }
 }
