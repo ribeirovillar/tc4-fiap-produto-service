@@ -12,7 +12,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   fiap-produto-service:
-    build: .
+    image: draraujoo/fiap-produto-service:latest
     container_name: fiap-produto-service
     depends_on:
       - fiap-produto-postgres
